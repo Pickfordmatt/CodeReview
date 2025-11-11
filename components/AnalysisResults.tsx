@@ -7,9 +7,10 @@ import { useState } from 'react';
 interface AnalysisResultsProps {
   result: AnalysisResult;
   onDownloadReport: () => void;
+  onDownloadCSV: () => void;
 }
 
-export default function AnalysisResults({ result, onDownloadReport }: AnalysisResultsProps) {
+export default function AnalysisResults({ result, onDownloadReport, onDownloadCSV }: AnalysisResultsProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const toggleCategory = (key: string) => {
@@ -80,13 +81,22 @@ export default function AnalysisResults({ result, onDownloadReport }: AnalysisRe
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-2xl font-bold">Security Analysis Report</h2>
-          <button
-            onClick={onDownloadReport}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            <span>Download Report</span>
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={onDownloadCSV}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export CSV</span>
+            </button>
+            <button
+              onClick={onDownloadReport}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Report</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

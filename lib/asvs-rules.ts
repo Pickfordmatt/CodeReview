@@ -6,6 +6,7 @@ export interface SecurityRule {
   severity: 'critical' | 'high' | 'medium' | 'low';
   pattern: RegExp;
   level: 1 | 2 | 3; // ASVS levels
+  owaspTop10: string[]; // OWASP Top 10 2021 mappings
 }
 
 export interface SecurityFinding {
@@ -27,6 +28,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(?<!\/\/\s*)(?<!process\.env\.)(?<!import.*)(?<!export.*)(?<![A-Z][a-zA-Z]*)\b(password|passwd|pwd|secret|api[_-]?key|apikey|token)\s*=\s*["'](?!.*\{.*\}|.*<.*>|.*\$\{|\s*$|test|example|demo|placeholder|xxx|auth\.|api\.|\/|\.)[^"']{6,}["']/gi,
     level: 1,
+    owaspTop10: ['A07:2021 - Identification and Authentication Failures'],
   },
   {
     id: 'V2.1.2',
@@ -36,6 +38,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /password.*length.*[<<=]\s*[1-7](?!\d)/gi,
     level: 1,
+    owaspTop10: ['A07:2021 - Identification and Authentication Failures'],
   },
 
   // V3: Session Management
@@ -47,6 +50,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /setCookie\([^)]*\)(?!.*secure.*httponly)/gi,
     level: 1,
+    owaspTop10: ['A07:2021 - Identification and Authentication Failures'],
   },
   {
     id: 'V3.3.1',
@@ -56,6 +60,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /(sessionid|session_id|sessid).*[?&]/gi,
     level: 1,
+    owaspTop10: ['A07:2021 - Identification and Authentication Failures', 'A01:2021 - Broken Access Control'],
   },
 
   // V5: Input Validation
@@ -67,6 +72,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(execute|query|exec)\s*\(\s*["'`].*\+.*["'`]\s*\)/gi,
     level: 1,
+    owaspTop10: ['A03:2021 - Injection'],
   },
   {
     id: 'V5.1.2',
@@ -76,6 +82,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(exec|system|spawn|Runtime\.getRuntime\(\)\.exec)\s*\([^)]*\+[^)]*\)/gi,
     level: 1,
+    owaspTop10: ['A03:2021 - Injection'],
   },
   {
     id: 'V5.2.1',
@@ -85,6 +92,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /(readFile|writeFile|openFile|fopen).*\.\./gi,
     level: 1,
+    owaspTop10: ['A01:2021 - Broken Access Control'],
   },
   {
     id: 'V5.3.1',
@@ -94,6 +102,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /\.innerHTML\s*=.*(?!DOMPurify)/gi,
     level: 1,
+    owaspTop10: ['A03:2021 - Injection'],
   },
   {
     id: 'V5.3.2',
@@ -103,6 +112,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /dangerouslySetInnerHTML.*__html:(?!.*DOMPurify)/gi,
     level: 1,
+    owaspTop10: ['A03:2021 - Injection'],
   },
   {
     id: 'V5.3.3',
@@ -112,6 +122,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(?<!\/\/\s*)(?<!\/\*.*)(?<!\.)(?<!\w)\beval\s*\((?!.*JSON)(?!\s*\))/gi,
     level: 1,
+    owaspTop10: ['A03:2021 - Injection'],
   },
 
   // V6: Cryptography
@@ -123,6 +134,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /(MD5|SHA1|DES|RC4|ECB)\s*\(/gi,
     level: 1,
+    owaspTop10: ['A02:2021 - Cryptographic Failures'],
   },
   {
     id: 'V6.2.2',
@@ -132,6 +144,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(encryption[_-]?key|secret[_-]?key|cipher[_-]?key)\s*=\s*["'][^"']{8,}["']/gi,
     level: 1,
+    owaspTop10: ['A02:2021 - Cryptographic Failures'],
   },
   {
     id: 'V6.2.3',
@@ -141,6 +154,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'medium',
     pattern: /Math\.random\(\).*\b(password|token|secret|key|salt|nonce|session)/gi,
     level: 2,
+    owaspTop10: ['A02:2021 - Cryptographic Failures'],
   },
 
   // V7: Error Handling and Logging
@@ -152,6 +166,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'medium',
     pattern: /console\.(log|error|warn).*\b(password|token|secret|credit[_-]?card|ssn)\b/gi,
     level: 2,
+    owaspTop10: ['A09:2021 - Security Logging and Monitoring Failures'],
   },
   {
     id: 'V7.4.2',
@@ -161,6 +176,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'medium',
     pattern: /(?<!\/\/\s*)(printStackTrace|print_r|var_dump)(?!.*development|.*debug|.*test)/gi,
     level: 2,
+    owaspTop10: ['A05:2021 - Security Misconfiguration'],
   },
 
   // V8: Data Protection
@@ -172,6 +188,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /localStorage\.setItem.*\b(password|token|secret|credit[_-]?card|ssn)\b/gi,
     level: 1,
+    owaspTop10: ['A02:2021 - Cryptographic Failures', 'A04:2021 - Insecure Design'],
   },
 
   // V9: Communications
@@ -183,6 +200,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /(?<!\/\/\s*)(?<!http)http:\/\/(?!localhost|127\.0\.0\.1|0\.0\.0\.0|example\.com|test\.|schema)/gi,
     level: 1,
+    owaspTop10: ['A02:2021 - Cryptographic Failures'],
   },
   {
     id: 'V9.2.1',
@@ -192,6 +210,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(rejectUnauthorized|verify|SSL_VERIFY).*false/gi,
     level: 1,
+    owaspTop10: ['A02:2021 - Cryptographic Failures', 'A05:2021 - Security Misconfiguration'],
   },
 
   // V10: Malicious Code
@@ -203,6 +222,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'critical',
     pattern: /(backdoor|debug[_-]?mode|admin[_-]?override).*=.*true/gi,
     level: 1,
+    owaspTop10: ['A04:2021 - Insecure Design'],
   },
 
   // V12: Files and Resources
@@ -214,6 +234,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /multer\(|upload\.single|formidable(?!.*fileFilter)/gi,
     level: 1,
+    owaspTop10: ['A03:2021 - Injection', 'A04:2021 - Insecure Design'],
   },
 
   // V13: API and Web Service
@@ -225,6 +246,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'medium',
     pattern: /app\.(post|put|delete)\s*\(['"]\/(login|register|auth|api|password|reset).*async.*\)(?!.*rateLimit)/gi,
     level: 2,
+    owaspTop10: ['A07:2021 - Identification and Authentication Failures'],
   },
   {
     id: 'V13.2.1',
@@ -234,6 +256,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /Access-Control-Allow-Origin.*\*/gi,
     level: 1,
+    owaspTop10: ['A05:2021 - Security Misconfiguration'],
   },
 
   // V14: Configuration
@@ -245,6 +268,7 @@ export const asvsRules: SecurityRule[] = [
     severity: 'high',
     pattern: /(?<!\/\/\s*)(?<!process\.env\.)(DEBUG|NODE_ENV)\s*=\s*["'](true|1|development)["'](?!.*process\.env|.*config)/gi,
     level: 1,
+    owaspTop10: ['A05:2021 - Security Misconfiguration'],
   },
 ];
 

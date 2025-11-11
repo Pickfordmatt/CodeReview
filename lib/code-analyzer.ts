@@ -317,3 +317,46 @@ export function generateReport(result: AnalysisResult): string {
 
   return lines.join('\n');
 }
+
+// Helper function to escape CSV fields
+function escapeCSVField(field: string): string {
+  // If field contains comma, quote, or newline, wrap in quotes and escape quotes
+  if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+    return `"${field.replace(/"/g, '""')}"`;
+  }
+  return field;
+}
+
+export function generateCSV(result: AnalysisResult): string {
+  const rows: string[] = [];
+
+  // CSV Header
+  rows.push('Severity,Category,OWASP Top 10,Rule ID,Title,Description,File,Line,Code');
+
+  // Sort findings by severity
+  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  const sortedFindings = [...result.findings].sort((a, b) => {
+    return severityOrder[a.rule.severity] - severityOrder[b.rule.severity];
+  });
+
+  // Add each finding as a CSV row
+  for (const finding of sortedFindings) {
+    const owaspMappings = finding.rule.owaspTop10.join('; ');
+
+    const row = [
+      escapeCSVField(finding.rule.severity.toUpperCase()),
+      escapeCSVField(finding.rule.category),
+      escapeCSVField(owaspMappings),
+      escapeCSVField(finding.rule.id),
+      escapeCSVField(finding.rule.title),
+      escapeCSVField(finding.rule.description),
+      escapeCSVField(finding.file),
+      finding.line.toString(),
+      escapeCSVField(finding.code),
+    ].join(',');
+
+    rows.push(row);
+  }
+
+  return rows.join('\n');
+}
