@@ -1,9 +1,9 @@
 import JSZip from 'jszip';
 import { FileContent } from './code-analyzer';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
-const MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 50MB total
-const MAX_FILES = 1000; // Maximum number of files to process
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB per file
+const MAX_TOTAL_SIZE = 1024 * 1024 * 1024; // 1GB total
+const MAX_FILES = 100000; // Maximum number of files to process
 
 export interface ProcessingStats {
   totalFiles: number;

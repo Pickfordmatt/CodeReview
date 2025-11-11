@@ -10,16 +10,16 @@ interface AnalysisResultsProps {
 }
 
 export default function AnalysisResults({ result, onDownloadReport }: AnalysisResultsProps) {
-  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
-  const toggleFile = (file: string) => {
-    const newExpanded = new Set(expandedFiles);
-    if (newExpanded.has(file)) {
-      newExpanded.delete(file);
+  const toggleCategory = (key: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
     } else {
-      newExpanded.add(file);
+      newExpanded.add(key);
     }
-    setExpandedFiles(newExpanded);
+    setExpandedCategories(newExpanded);
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -52,14 +52,27 @@ export default function AnalysisResults({ result, onDownloadReport }: AnalysisRe
     }
   };
 
-  // Group findings by file
+  // Group findings by category and severity
   const groupedFindings = result.findings.reduce((acc, finding) => {
-    if (!acc[finding.file]) {
-      acc[finding.file] = [];
+    const key = `${finding.rule.severity}|${finding.rule.category}`;
+    if (!acc[key]) {
+      acc[key] = {
+        severity: finding.rule.severity,
+        category: finding.rule.category,
+        findings: []
+      };
     }
-    acc[finding.file].push(finding);
+    acc[key].findings.push(finding);
     return acc;
-  }, {} as Record<string, typeof result.findings>);
+  }, {} as Record<string, { severity: string; category: string; findings: typeof result.findings }>);
+
+  // Sort groups by severity (critical -> high -> medium -> low)
+  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  const sortedGroups = Object.entries(groupedFindings).sort((a, b) => {
+    const severityDiff = severityOrder[a[1].severity as keyof typeof severityOrder] - severityOrder[b[1].severity as keyof typeof severityOrder];
+    if (severityDiff !== 0) return severityDiff;
+    return a[1].category.localeCompare(b[1].category);
+  });
 
   return (
     <div className="space-y-6">
@@ -151,52 +164,66 @@ export default function AnalysisResults({ result, onDownloadReport }: AnalysisRe
           </div>
         ) : (
           <div className="space-y-4">
-            {Object.entries(groupedFindings).map(([file, findings]) => (
-              <div key={file} className="border dark:border-gray-700 rounded-lg overflow-hidden">
+            {sortedGroups.map(([key, group]) => (
+              <div key={key} className={`border rounded-lg overflow-hidden ${getSeverityColor(group.severity)}`}>
                 <button
-                  onClick={() => toggleFile(file)}
-                  className="w-full text-left p-4 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-850 transition-colors"
+                  onClick={() => toggleCategory(key)}
+                  className="w-full text-left p-4 hover:opacity-80 transition-opacity"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <span className="font-mono text-sm font-medium">{file}</span>
-                      <span className="px-2 py-1 bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 rounded text-xs font-medium">
-                        {findings.length} {findings.length === 1 ? 'issue' : 'issues'}
-                      </span>
+                      {getSeverityIcon(group.severity)}
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-lg uppercase">{group.severity}</span>
+                          <span className="text-gray-600 dark:text-gray-300">•</span>
+                          <span className="font-semibold">{group.category}</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {group.findings.length} {group.findings.length === 1 ? 'finding' : 'findings'}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-gray-500">
-                      {expandedFiles.has(file) ? '−' : '+'}
+                    <span className="text-2xl text-gray-500">
+                      {expandedCategories.has(key) ? '−' : '+'}
                     </span>
                   </div>
                 </button>
 
-                {expandedFiles.has(file) && (
-                  <div className="p-4 space-y-4">
-                    {findings.map((finding, index) => (
+                {expandedCategories.has(key) && (
+                  <div className="p-4 space-y-4 bg-white dark:bg-gray-800">
+                    {group.findings.map((finding, index) => (
                       <div
                         key={index}
-                        className={`border rounded-lg p-4 ${getSeverityColor(finding.rule.severity)}`}
+                        className="border dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
                       >
-                        <div className="flex items-start space-x-3 mb-2">
-                          {getSeverityIcon(finding.rule.severity)}
+                        <div className="flex items-start space-x-3">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className="font-mono text-sm font-medium">{finding.rule.id}</span>
-                              <span className="font-semibold">{finding.rule.title}</span>
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="font-mono text-sm font-medium bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                                {finding.rule.id}
+                              </span>
+                              <span className="font-semibold text-lg">{finding.rule.title}</span>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
                               {finding.rule.description}
                             </p>
-                            <div className="space-y-1 text-sm">
-                              <p className="text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Line:</span> {finding.line}
-                              </p>
-                              <p className="text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Category:</span> {finding.rule.category}
-                              </p>
-                              <div className="mt-2">
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium text-gray-600 dark:text-gray-400">File:</span>
+                                <span className="font-mono text-xs bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
+                                  {finding.file}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium text-gray-600 dark:text-gray-400">Line:</span>
+                                <span className="font-mono text-xs bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
+                                  {finding.line}
+                                </span>
+                              </div>
+                              <div className="mt-3">
                                 <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Code:</p>
-                                <pre className="bg-gray-800 text-gray-100 p-2 rounded text-xs overflow-x-auto">
+                                <pre className="bg-gray-800 text-gray-100 p-3 rounded text-xs overflow-x-auto border border-gray-700">
                                   {finding.code}
                                 </pre>
                               </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import FileUpload from '@/components/FileUpload';
 import AnalysisResults from '@/components/AnalysisResults';
+import CodeMetrics from '@/components/CodeMetrics';
 import { processZipFile, formatFileSize } from '@/lib/zip-processor';
 import { analyzeCode, generateReport, AnalysisResult } from '@/lib/code-analyzer';
 import { asvsRules } from '@/lib/asvs-rules';
@@ -163,6 +164,11 @@ export default function Home() {
                 Analyze Another Project
               </button>
             </div>
+            <CodeMetrics
+              languageStats={result.languageStats}
+              frameworks={result.frameworks}
+              totalLines={result.totalLines}
+            />
             <AnalysisResults result={result} onDownloadReport={handleDownloadReport} />
           </div>
         )}
